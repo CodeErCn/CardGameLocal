@@ -1,0 +1,236 @@
+<script>
+	var confirmRule, guess, guessTemp, answerVal, answerColor, currentCard, nextCard, numb, loop = true,loopRight = true, loopWrongCount = 3, count, scoreString = "";
+
+	function Deck() {
+		this.cards = [];
+		this.deckCount = function() {
+			return this.cards.length;
+		}
+		this.init = function() {
+			//start loop of suits (s)
+			for(s=1; s<=4; s++){
+				//start loop of value (v)
+				for(v=1; v<=13; v++){
+					this.cards.push(new Card(v,s));
+				}
+			}
+		}
+	}
+
+	function Card(val, suit) {
+		//Assign card value and swap the 10, 11, 12, 13 to J, Q, K, A
+		if(val == 10) {
+			this.val = val;
+			this.valDisplay = "J";
+		}else if(val == 11) {
+			this.val = val;
+			this.valDisplay = "Q";
+		}else if(val == 12) {
+			this.val = val;
+			this.valDisplay = "K";
+		}else if (val == 13) {
+			this.val = val;
+			this.valDisplay = "A";
+		}else {
+			this.val = val;
+			this.valDisplay = val + 1;
+		}
+
+		//Assign card suit weight (Not needed for this assignment)
+		//this.suitWeight = suit;
+		
+		//Assign card symbol & card color according to suit weight
+		if(suit == 1) {
+			this.suitSymbol = "Daimond";
+			this.suitColor = "RED";
+		}else if(suit == 2) {
+			this.suitSymbol = "Club";
+			this.suitColor = "BLACK";
+		}else if(suit == 3) {
+			this.suitSymbol = "Heart";
+			this.suitColor = "RED";
+		}else if(suit == 4) {
+			this.suitSymbol = "Spade";
+			this.suitColor = "BLACK";
+		}
+	}
+	
+	//contruction function for Score Board
+	function scoreBoard() {
+		this.score = [];
+		this.scoreCount = function() {
+			return this.score.length;
+		}
+		this.scoreToArray = function(ct, cCard, gs, rOrW) {
+			this.score.push(new scoreCard(ct, cCard, gs, rOrW));
+		}
+	}
+
+	//Contruction function for Score Card
+	function scoreCard(sbCt, sbCcard, sbGs, sbROrW) {
+		this.cardCount = sbCt;
+		this.scoreColor = sbCcard.suitColor;
+		this.scoreSymbol = sbCcard.suitSymbol;
+		this.scoreVDisplay = sbCcard.valDisplay;
+		this.userGuess = sbGs;
+		this.ROrWAnswer = sbROrW;
+	}
+	
+	//game Object of methods on confirm game rules, pull random card, prompt for guesses, card remain
+	var Game = {
+		//1) Confirm game rules
+		ConfirmMessage: function() {
+			return confirm("Card Guessing Game instruction:\n\nGuess if next card is either Red/Black or Bigger/Lesser/Equal compare to the current card. Ace been the biggest.\n\nWinning condition:\n\n1) Correct guesses OR\n2) Correct on full deck of cards.\n\nYou have THREE chances to get it right!!\nGood Luck!!");
+		},
+		//2) generate a random number rang between the count *then pull a cards off the array and remove the card and move rest of cards arry forward.
+		getRandomCard: function(numberOfCards) {
+			numb = Math.floor(Math.random() * numberOfCards);
+			return newDeck.cards.splice(numb,1)[0];
+		},
+		//3) compare current card with next card
+		compareCard: function(cardCurrentA, cardNextA) {
+			if(cardCurrentA.val > cardNextA.val) {
+				return "lesser";
+			}else if(cardCurrentA.val < cardNextA.val) {
+				return "bigger";
+			}else if(cardCurrentA.val === cardNextA.val) {
+				return "equal";
+			}
+		},
+		//4) Prompt for player guess input - dissplay current card + card left 
+		playerGuess: function(cardCurrentG) {
+			while(loop == true){
+				guessTemp = prompt("Card left in the deck: " + newDeck.deckCount() + "\n\nCurrent Card:   " + cardCurrentG.suitColor + "  " + cardCurrentG.suitSymbol + "  " + cardCurrentG.valDisplay + "\n\nPlease guess if next card is either Red/Black or Bigger/Lesser/Equal compare to current Card:");
+					
+				//check for no input (guessTemp = "null")
+				if(guessTemp != null){
+					//Conver answer to lower case
+					guessTemp = guessTemp.toLowerCase();
+					// check input for string && Red||Black||Bigger||Lessr
+					if(typeof guessTemp === "string" && guessTemp === "red" || guessTemp === "black" || guessTemp === "bigger" || guessTemp === "lesser" || guessTemp ==="equal") {
+						return guessTemp;
+						break;
+					}else{
+						//check input
+						alert("Please input Red/Black/Bigger/Lessr/Equal Only. Thank you.");
+						loop = true;	
+					}
+				}else{
+					//check cancel (guessTemp = null)
+					alert("GAME CANCELED\n\nThank you for playing!!");
+					break;
+				}
+			} // LOOP
+		},
+		//5) Display score baord
+		displayScoreBoard: function(sbScore) {
+			//If score array is less than 5 then display all
+			if(newScoreBoard.scoreCount()<6) {
+				for(i=0; i<=newScoreBoard.scoreCount()-1; i++){
+					scoreString += "Card " + sbScore[i].cardCount + "  " + sbScore[i].scoreColor + "  " + sbScore[i].scoreSymbol + "  " + sbScore[i].scoreVDisplay + " | " + "Your answer was: " + sbScore[i].userGuess + ".  " + sbScore[i].ROrWAnswer+ "!!\n";
+				}
+				alert("-------- Score Board --------\n\n" + scoreString);
+				//reset string
+				scoreString = "";
+			}
+			//Else display the last five guesses
+			else {
+				for(j=newScoreBoard.scoreCount()-5; j<=newScoreBoard.scoreCount()-1; j++){
+					scoreString += "Card " + sbScore[j].cardCount + "  " + sbScore[j].scoreColor + "  " + sbScore[j].scoreSymbol + "  " + sbScore[j].scoreVDisplay + " | " + "Your answer was: " + sbScore[i].userGuess + ".  " +sbScore[i].ROrWAnswer+ "!!\n";
+				}	
+				alert("-------- Score Board --------\n\n" + scoreString);
+				//reset string
+				scoreString = "";
+			}
+		}
+	};
+	
+	//Creat new Deck()
+	newDeck = new Deck();
+	newDeck.init();
+	//Creat new scoreBoard()
+	newScoreBoard = new scoreBoard();
+	
+	/*Game starts here -- Guessing card game instruction:
+	Begin with a random card draw from the Deck() and ask 
+	for player input to guess if next card is either 
+	Red/Block or Bigger/Lesser/equal than current card.
+	Winning condition 1) if the answer is correct or
+	2) complete all Deck of cards. Loses if answer is wong.*/
+
+	//confirm rules
+	confirmRule = Game.ConfirmMessage();
+	//if confirm = true Starts the game
+	if(confirmRule == true){
+		//pull random current card and remove from array, newDeck.count --
+		currentCard = Game.getRandomCard(newDeck.deckCount());
+		//loop till finish all cards or wrong
+		while(loopRight == true){
+			//ask for player guess (bigger/lesser/red/black) 
+			guess = Game.playerGuess(currentCard);
+			//pull a random next card and remove from array, newDeck.count --
+			nextCard = Game.getRandomCard(newDeck.deckCount());
+			//Conver color to lower case
+			answerColor = nextCard.suitColor.toLowerCase();
+			//Compare CurrentCard to NextCard and return string "bigger" or "lesser"
+			answerVal = Game.compareCard(currentCard, nextCard);
+			while(loopWrongCount != 0) {
+				//break out the loop when player input cancel.
+				if(typeof guess == "undefined"){
+					loopRight = false;
+					break;
+				}else{
+					//if(answer == guess) alert("you are right!!") and loop
+					if(answerVal === guess || answerColor === guess){
+						alert("You are right!!\nAnd you still have " + loopWrongCount + " chances\n\n");
+						//if newDeck.count not = 0
+						if(newDeck.deckCount() != 0) {
+							//Push score card to array with newScoreBoard.scoreToArray
+							count = newDeck.deckCount() + 1;
+							newScoreBoard.scoreToArray(count, currentCard, guess, "right");
+							//Display score with game.displayScoreBaord
+							Game.displayScoreBoard(newScoreBoard.score);
+							//Assign the nextCard to become currentCard
+							currentCard = nextCard;
+							break;
+						}
+						 //if all correct on FULL DECK then break
+						else{
+							alert("\n\nCongradulation for complete the FULL deck!!\nYou Win!!\n");
+						 	//Display score with game.displayScoreBoard
+						 	Game.displayScoreBoard(newScoreBoard.score);
+						 	//break out the LoopRight
+						 	loopRight = false;
+							break;
+						}		
+					}
+					// allow three chances for player to be wrong
+					else{
+					 	alert("Sorry you are Wrong!!\n\nYou have " + (loopWrongCount -1) + " chances left to try!\n\n");
+					 	///Push score card to array with newScoreBoard.scoreToArray
+						count = newDeck.deckCount() + 1;
+						newScoreBoard.scoreToArray(count, currentCard, guess, "Wrong");	
+						//Display score with game.displayScoreBaord
+						Game.displayScoreBoard(newScoreBoard.score);
+						//Wong count --
+						loopWrongCount--;
+						//else alert("Sorry you are wrong!") break out the loop
+						if(loopWrongCount == 0) { 
+							alert("GAME OVER\n\nNext card was: " + nextCard.suitColor + "  " + nextCard.suitSymbol + "  " + nextCard.valDisplay + "\n\nThank you for playing"); 
+							//break out of loopRIght
+						 	loopRight = false;
+						 	break;
+						}else{
+							// Ask user again for the answer
+						 	guess = Game.playerGuess(currentCard);
+						}
+					}
+				}
+			}// 3 chance LOOP for Wong answer
+		}// LOOP for right answer
+	}
+	//else "Goodbye!"	
+	else {
+		alert("Thank you for trying. Goodbye.");
+	}
+</script>
